@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import html2canvas from "html2canvas";
 
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;900&family=DM+Mono:wght@400;500&display=swap');
@@ -24,6 +25,8 @@ button{cursor:pointer}
 .fu4{animation:fadeUp .5s .32s cubic-bezier(.16,1,.3,1) both}
 .fi {animation:fadeIn .4s ease both}
 `;
+
+const APP_URL = "https://voltra-yznl.vercel.app";
 
 const C = {
   bg:"#050608",surf:"#0c0d12",surf2:"#121420",surf3:"#181b26",
@@ -117,7 +120,7 @@ const SPORTS=[
    equipement:["Barre olympique","Haltères","Kettlebell","Médecine ball","Box pliométrique"]},
   {id:"tennis",name:"Tennis",icon:"🎾",color:"#CDDC39",
    weights:{force:0.8,detente:0.8,sprint30:0.9,sprint10:1.0,endurance:1.0,gainage:1.1},
-   contexte:"Le tennisman réalise 400-500 frappes/match avec chaîne cinétique complète. Le service atteint 2000°/s.",
+   contexte:"Le tennisman réalise 400-500 frappes/match avec chaîne cinétique complète.",
    patterns:["chaine_cinetique_frappe","service_overhead","rotation_differentielle","split_step"],
    cardio:{volume:82,type:"Intermittent aléatoire 78-95% FCmax",methodes:["Simulation de points","Spider drill","Lateral sprints"]},
    equipement:["Haltères","Médecine ball","Câble poulie","Élastiques","Kettlebell"]},
@@ -135,25 +138,25 @@ const SPORTS=[
    equipement:["Barre olympique","Sled/traineau","Élastiques","Box pliométrique","Haltères"]},
   {id:"basket",name:"Basketball",icon:"🏀",color:"#FF7043",
    weights:{force:0.9,detente:1.3,sprint30:1.0,sprint10:1.1,endurance:0.9,gainage:0.9},
-   contexte:"Le basketteur enchaîne accélérations/décélérations brutales sur parquet dur, sauts répétés, changements de direction à 180°.",
+   contexte:"Le basketteur enchaîne accélérations/décélérations brutales, sauts répétés, changements de direction à 180°.",
    patterns:["detente_verticale","deceleration_excentrique","crossover_lateral","tir_stability"],
    cardio:{volume:72,type:"Intervalles courts 82-95% FCmax",methodes:["Suicide runs","Jump rope HIIT","Zigzag sprints"]},
    equipement:["Barre olympique","Haltères","Box pliométrique","Élastiques","Médecine ball"]},
   {id:"rugby",name:"Rugby",icon:"🏉",color:"#A1887F",
    weights:{force:1.3,detente:0.9,sprint30:1.1,sprint10:1.0,endurance:1.1,gainage:1.3},
-   contexte:"Le rugbyman réalise des placages, mêlées isométriques intenses, rucks et courses avec balle sur 80 min.",
+   contexte:"Le rugbyman réalise des placages, mêlées isométriques, rucks et courses avec balle sur 80 min.",
    patterns:["poussee_horizontale","absorption_choc","mele_isometrique","rotation_tronc_charge"],
-   cardio:{volume:78,type:"Intervals longs + sprints avec charge 80-92% FCmax",methodes:["Intervals porteur","Circuit haute intensité","Sled sprint"]},
+   cardio:{volume:78,type:"Intervals longs + sprints 80-92% FCmax",methodes:["Intervals porteur","Circuit haute intensité","Sled sprint"]},
    equipement:["Barre olympique","Haltères","Sled","Battle ropes","Kettlebell"]},
   {id:"crossfit",name:"CrossFit",icon:"🏋️",color:"#E91E63",
    weights:{force:1.1,detente:1.0,sprint30:0.8,sprint10:0.8,endurance:1.2,gainage:1.1},
-   contexte:"L'haltérophile/crossfitter développe puissance globale maximale: arraché, épaulé-jeté, mouvements gymnastics.",
+   contexte:"L'haltérophile/crossfitter développe puissance globale: arraché, épaulé-jeté, mouvements gymnastics.",
    patterns:["arrachee_epaule","muscle_up","kb_swing_hinge","clean_and_jerk"],
    cardio:{volume:88,type:"Métabolique intégré 80-100% FCmax",methodes:["AMRAP/EMOM","Assault bike Tabata","Rowing intervalles"]},
    equipement:["Barre olympique","Kettlebell","Anneaux","Haltères","Box","Corde"]},
   {id:"natation",name:"Natation",icon:"🏊",color:"#0288D1",
    weights:{force:0.9,detente:0.7,sprint30:0.6,sprint10:0.6,endurance:1.3,gainage:1.2},
-   contexte:"Le nageur réalise jusqu'à 1 million de cycles/an. Gainage streamline et endurance cardiovasculaire dominent.",
+   contexte:"Le nageur réalise jusqu'à 1 million de cycles/an. Gainage streamline et endurance dominent.",
    patterns:["rotation_corps_nage","pull_adduction_epaule","kick_cheville","virage_culbute"],
    cardio:{volume:88,type:"Aérobie soutenu + intervalles 70-88% FCmax",methodes:["Cardio croisé vélo","Rowing machine","Natation intervalles"]},
    equipement:["Câble poulie","Haltères","Élastiques","TRX","Médecine ball"]},
@@ -192,7 +195,7 @@ function VoltraLogo({size=22}){
   );
 }
 
-function PlayerCard({scores,ovr,playerName,sport,compact=false}){
+function PlayerCard({scores,ovr,playerName,sport,compact=false,cardRef=null}){
   const ovrColor=getOVRColor(ovr);
   const tier=getTier(ovr);
   const sp=SPORTS.find(s=>s.id===sport)||SPORTS[0];
@@ -205,7 +208,7 @@ function PlayerCard({scores,ovr,playerName,sport,compact=false}){
     {key:"gainage",label:"GAI"},
   ];
   return(
-    <div style={{position:"relative",width:compact?220:320,background:"linear-gradient(145deg,#0d0e18 0%,#1a1520 40%,#0d0e18 100%)",border:`1.5px solid ${C.gold}50`,borderRadius:compact?16:20,overflow:"hidden",boxShadow:`0 0 60px ${ovrColor}25,inset 0 0 80px ${ovrColor}05`}}>
+    <div ref={cardRef} style={{position:"relative",width:compact?220:320,background:"linear-gradient(145deg,#0d0e18 0%,#1a1520 40%,#0d0e18 100%)",border:`1.5px solid ${C.gold}50`,borderRadius:compact?16:20,overflow:"hidden",boxShadow:`0 0 60px ${ovrColor}25,inset 0 0 80px ${ovrColor}05`}}>
       <div style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:1,background:`linear-gradient(135deg,${ovrColor}08 0%,transparent 40%,${C.gold}06 60%,transparent 80%,${ovrColor}05 100%)`,backgroundSize:"200% 200%",animation:"holo 4s ease infinite"}}/>
       <div style={{position:"absolute",top:0,left:0,right:0,height:4,background:`linear-gradient(90deg,transparent,${ovrColor},${C.gold},${ovrColor},transparent)`}}/>
       <div style={{padding:compact?"14px 14px 8px":"18px 18px 10px",position:"relative",zIndex:2}}>
@@ -271,10 +274,11 @@ export default function App(){
   const[liveSerie,setLiveSerie]=useState(1);
   const[restTimer,setRestTimer]=useState(0);
   const[restActive,setRestActive]=useState(false);
-  const[copied,setCopied]=useState(false);
+  const[sharing,setSharing]=useState(false);
   const[error,setError]=useState("");
   const progRef=useRef(null);
   const timerRef=useRef(null);
+  const cardRef=useRef(null);
 
   useEffect(()=>{
     const st=document.createElement("style");st.textContent=CSS;document.head.appendChild(st);
@@ -307,15 +311,43 @@ export default function App(){
 
   const startRest=secs=>{setRestTimer(secs);setRestActive(true);};
 
-  const shareCard=()=>{
-    const lines=[`⚡ MA CARTE VOLTRA`,`⭐ OVR: ${ovr} — ${getTier(ovr).name}`];
-    TESTS.forEach(t=>{if(scores[t.id])lines.push(`${t.icon} ${t.label}: ${scores[t.id]}`);});
-    lines.push(`💪 Sport: ${selSport?.name||"—"}`,`\nGénère ta carte sur VOLTRA.APP`);
-    const text=lines.join("\n");
-    if(navigator.share){
-      navigator.share({title:"Ma carte VOLTRA",text}).catch(()=>{});
-    }else{
-      navigator.clipboard.writeText(text).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2500);});
+  // Partage avec vraie image de la carte
+  const shareCard=async()=>{
+    if(!cardRef.current||sharing)return;
+    setSharing(true);
+    try{
+      const canvas=await html2canvas(cardRef.current,{
+        backgroundColor:"#050608",
+        scale:2,
+        useCORS:true,
+        logging:false,
+      });
+      canvas.toBlob(async(blob)=>{
+        if(!blob){setSharing(false);return;}
+        const file=new File([blob],"ma-carte-voltra.png",{type:"image/png"});
+        const shareText=`⚡ Ma carte VOLTRA — OVR ${ovr} ${getTier(ovr).name}\n\n💪 Sport: ${selSport?.name||"—"}\n\nGénère ta carte sur Voltra !\n${APP_URL}`;
+        if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+          await navigator.share({
+            title:"Ma carte VOLTRA",
+            text:shareText,
+            files:[file],
+          }).catch(()=>{});
+        } else if(navigator.share){
+          await navigator.share({
+            title:"Ma carte VOLTRA",
+            text:shareText,
+            url:APP_URL,
+          }).catch(()=>{});
+        } else {
+          const link=document.createElement("a");
+          link.href=URL.createObjectURL(blob);
+          link.download="ma-carte-voltra.png";
+          link.click();
+        }
+        setSharing(false);
+      },"image/png");
+    }catch(e){
+      setSharing(false);
     }
   };
 
@@ -325,34 +357,26 @@ export default function App(){
     setScreen("generating");setGenProgress(0);setError("");
     let idx=0;setGenMsg(GEN_MSGS[0]);
     progRef.current=setInterval(()=>{idx++;if(idx<GEN_MSGS.length){setGenMsg(GEN_MSGS[idx]);setGenProgress(Math.round(idx/GEN_MSGS.length*85));}},1600);
-    const weak=TESTS.filter(t=>scores[t.id]&&scores[t.id]<70).map(t=>`${t.label}: ${scores[t.id]}/99`).join(", ");
-    const strong=TESTS.filter(t=>scores[t.id]&&scores[t.id]>=80).map(t=>`${t.label}: ${scores[t.id]}/99`).join(", ");
+    const weak=TESTS.filter(t=>scores[t.id]&&scores[t.id]<70).map(t=>`${t.label}:${scores[t.id]}`).join(",");
+    const strong=TESTS.filter(t=>scores[t.id]&&scores[t.id]>=80).map(t=>`${t.label}:${scores[t.id]}`).join(",");
     try{
       const res=await fetch("/api/generate",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
-          model:"claude-sonnet-4-20250514",max_tokens:8000,
-          system:`Tu es un préparateur physique expert de niveau international.
-SPORT: ${selSport.name}
+          model:"claude-sonnet-4-20250514",
+          max_tokens:4000,
+          system:`Tu es un préparateur physique expert. Crée un programme musculation+cardio pour ${selSport.name}.
 CONTEXTE: ${selSport.contexte}
-PATTERNS: ${selSport.patterns.join(", ")}
-CARDIO: Volume ${selSport.cardio.volume}/100 — ${selSport.cardio.type}
-OVR ATHLÈTE: ${ovr}/99 — ${getTier(ovr).name}
-FAIBLESSES À CIBLER: ${weak||"Aucune — profil équilibré"}
-POINTS FORTS: ${strong||"Profil en développement"}
-NIVEAU: ${athlete.niveau} | OBJECTIF: ${athlete.objectif} | JOURS: ${athlete.jours}j/sem | SAISON: ${athlete.saison}
-BLESSURES: ${athlete.blessures||"Aucune"}
-ÉQUIPEMENT: ${selSport.equipement.join(", ")}
-RÈGLES:
-1. Exercices SPÉCIFIQUES au ${selSport.name} — jamais génériques
-2. Cible EN PRIORITÉ les faiblesses identifiées
-3. Cardio adapté au volume ${selSport.cardio.volume}/100 : >80 2 blocs/séance | 50-80 1 bloc | <50 cardio léger
-4. Pour chaque exercice: nom créatif, geste sportif répliqué, position départ, exécution, 3 focus, séries x reps x tempo, récup, intention, progression
-5. Nomme une focus_faiblesse par séance
-Réponds UNIQUEMENT en JSON valide sans backticks.
-{"programme_titre":"string","programme_sous_titre":"string","logique_programme":"string","strategie_cardio":"string","seances":[{"num":0,"titre":"string","focus_sportif":"string","focus_faiblesse":"string","duree_min":0,"ratio":"string","blocs":[{"bloc_nom":"string","bloc_type":"MUSCU","bloc_desc":"string","duree_min":0,"exercices":[{"nom":"string","type_exercice":"MUSCU","geste_sportif":"string","position_depart":"string","execution":"string","focus_technique":["string"],"series_reps":"string","recuperation":"string","zone_fc":"string","structure_cardio":"string","intention":"string","progression":"string"}]}]}],"conseils_specifiques":["string"],"conseils_cardio":["string"]}`,
-          messages:[{role:"user",content:`Génère le programme ${athlete.jours} séances pour cet athlète de ${selSport.name} OVR ${ovr}. Faiblesses: ${weak||"équilibré"}. JSON uniquement.`}]
+PATTERNS: ${selSport.patterns.join(",")}
+CARDIO: ${selSport.cardio.volume}/100 — ${selSport.cardio.type}
+OVR: ${ovr}/99 FAIBLESSES: ${weak||"aucune"} POINTS FORTS: ${strong||"équilibré"}
+NIVEAU: ${athlete.niveau} JOURS: ${athlete.jours} SAISON: ${athlete.saison}
+BLESSURES: ${athlete.blessures||"aucune"} ÉQUIP: ${selSport.equipement.join(",")}
+RÈGLES: exercices spécifiques au ${selSport.name}, cible les faiblesses, cardio adapté.
+JSON compact sans espaces ni backticks:
+{"programme_titre":"","programme_sous_titre":"","logique_programme":"","strategie_cardio":"","seances":[{"num":1,"titre":"","focus_sportif":"","focus_faiblesse":"","duree_min":60,"ratio":"","blocs":[{"bloc_nom":"","bloc_type":"MUSCU","bloc_desc":"","duree_min":10,"exercices":[{"nom":"","type_exercice":"MUSCU","geste_sportif":"","position_depart":"","execution":"","focus_technique":["","",""],"series_reps":"","recuperation":"","zone_fc":"","structure_cardio":"","intention":"","progression":""}]}]}],"conseils_specifiques":["",""],"conseils_cardio":["",""]}`,
+          messages:[{role:"user",content:`Programme ${athlete.jours} séances ${selSport.name} OVR${ovr}. Faiblesses:${weak||"équilibré"}. JSON uniquement.`}]
         })
       });
       const data=await res.json();
@@ -451,11 +475,11 @@ Réponds UNIQUEMENT en JSON valide sans backticks.
               </div>
               {testValues.force&&(
                 <div style={{background:`${C.gold}10`,border:`1px solid ${C.gold}30`,borderRadius:8,padding:"8px 12px",fontSize:12,color:C.gold}}>
-                  ⚡ ({forceInputs.squat} + {forceInputs.bench} + {parseFloat(forceInputs.poids||0)+parseFloat(forceInputs.traction||0)}) ÷ 3 ÷ {forceInputs.poids} = <strong>{testValues.force}</strong>
+                  ⚡ Ratio = <strong>{testValues.force}</strong>
                 </div>
               )}
               {scores.force&&<div style={{height:5,background:C.surf3,borderRadius:3,overflow:"hidden",marginTop:8}}><div style={{height:"100%",width:`${scores.force}%`,background:getTier(scores.force).color,borderRadius:3,transition:"width 1s ease"}}/></div>}
-              <div style={{fontSize:10,color:C.muted,marginTop:4}}>Traction = poids corps + lest · 1.0 = débutant · 1.4 = bon · 1.8 = élite</div>
+              <div style={{fontSize:10,color:C.muted,marginTop:4}}>1.0 = débutant · 1.4 = bon · 1.8 = élite</div>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
               {TESTS.slice(1).map((t,i)=>{
@@ -528,7 +552,7 @@ Réponds UNIQUEMENT en JSON valide sans backticks.
           <div style={{fontFamily:"'Bebas Neue'",fontSize:18,letterSpacing:3,color:C.muted}}>TA CARTE VOLTRA</div>
         </div>
         <div className="fu1" style={{display:"flex",justifyContent:"center",marginBottom:24}}>
-          <PlayerCard scores={scores} ovr={ovr} playerName={playerName||"ATHLÈTE"} sport={selSport?.id||"football"}/>
+          <PlayerCard scores={scores} ovr={ovr} playerName={playerName||"ATHLÈTE"} sport={selSport?.id||"football"} cardRef={cardRef}/>
         </div>
         <div className="fu2" style={{marginBottom:20}}>
           <div style={{fontFamily:"'Bebas Neue'",fontSize:26,color:getOVRColor(ovr),textShadow:`0 0 30px ${getOVRColor(ovr)}60`}}>
@@ -539,7 +563,9 @@ Réponds UNIQUEMENT en JSON valide sans backticks.
           </div>
         </div>
         <div className="fu3" style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginBottom:20}}>
-          <Btn onClick={shareCard} variant="outline" style={{fontSize:14}}>{copied?"✅ COPIÉ !":"📤 PARTAGER MA CARTE"}</Btn>
+          <Btn onClick={shareCard} variant="outline" style={{fontSize:14}} disabled={sharing}>
+            {sharing?"⏳ CAPTURE...":"📸 PARTAGER MA CARTE"}
+          </Btn>
           <Btn onClick={()=>setScreen("sport")} style={{fontSize:16,padding:"12px 32px"}}>GÉNÉRER MON PROGRAMME →</Btn>
         </div>
         <div className="fu4">
@@ -639,7 +665,7 @@ Réponds UNIQUEMENT en JSON valide sans backticks.
             ))}
             <div className="fu2" style={{marginBottom:13}}>
               <label style={{display:"block",fontFamily:"'Bebas Neue'",fontSize:11,letterSpacing:2,color:C.muted,marginBottom:4}}>BLESSURES / CONTRAINTES</label>
-              <textarea value={athlete.blessures} onChange={e=>setAthlete(p=>({...p,blessures:e.target.value}))} placeholder="Ex: ancienne entorse cheville, tendinite épaule…" style={{...inp,height:76,resize:"vertical"}}/>
+              <textarea value={athlete.blessures} onChange={e=>setAthlete(p=>({...p,blessures:e.target.value}))} placeholder="Ex: ancienne entorse cheville…" style={{...inp,height:76,resize:"vertical"}}/>
             </div>
             {error&&<div style={{background:"#F4433618",border:"1px solid #F4433640",borderRadius:8,padding:12,color:"#F44336",fontSize:13,marginBottom:12}}>{error}</div>}
             <Btn onClick={generateProgram} full style={{fontSize:17,padding:"14px"}}>⚡ GÉNÉRER MON PROGRAMME VOLTRA</Btn>
