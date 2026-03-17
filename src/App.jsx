@@ -25,7 +25,8 @@ button{cursor:pointer}
 .fi {animation:fadeIn .4s ease both}
 `;
 
-const API_KEY = "REMPLACER_PAR_CLE";
+const API_KEY = import.meta.env.VITE_API_KEY;
+
 
 const C = {
   bg:"#050608", surf:"#0c0d12", surf2:"#121420", surf3:"#181b26",
