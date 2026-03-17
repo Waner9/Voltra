@@ -1,8 +1,4 @@
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+export const config = { api: { bodyParser: false } };
 
 async function readBody(req) {
   return new Promise((resolve, reject) => {
@@ -17,11 +13,11 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
   if (req.method === "OPTIONS") return res.status(200).end();
 
   try {
     const rawBody = await readBody(req);
+    const body = JSON.parse(rawBody);
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -30,7 +26,12 @@ export default async function handler(req, res) {
         "x-api-key": process.env.API_KEY,
         "anthropic-version": "2023-06-01",
       },
-      body: rawBody,
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 4000,
+        system: body.system,
+        messages: body.messages,
+      }),
     });
 
     const data = await response.json();
