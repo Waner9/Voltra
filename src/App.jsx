@@ -390,10 +390,11 @@ Réponds UNIQUEMENT en JSON valide sans backticks.
       clearInterval(progRef.current);setGenProgress(100);
       const parsed=JSON.parse((data.content?.[0]?.text||"").replace(/```json|```/g,"").trim());
       setTimeout(()=>{setProgramme(parsed);setScreen("program");setActiveSeance(0);},600);
-    }catch(e){
-      clearInterval(progRef.current);setError("Erreur de génération. Réessaie.");setScreen("profile");
-    }
-  };
+ }catch(e){
+  clearInterval(progRef.current);
+  setError("Erreur: " + e.message);
+  setScreen("profile");
+}
 
   /* ══ HOME ══ */
   if(screen==="home") return(
