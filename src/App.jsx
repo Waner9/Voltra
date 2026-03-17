@@ -26,9 +26,9 @@ button{cursor:pointer}
 .fi {animation:fadeIn .4s ease both}
 `;
 
-const APP_URL = "https://voltra-yznl.vercel.app";
+const APP_URL="https://voltra-yznl.vercel.app";
 
-const C = {
+const C={
   bg:"#050608",surf:"#0c0d12",surf2:"#121420",surf3:"#181b26",
   border:"#1c2030",gold:"#C9A84C",goldLight:"#F0D080",
   text:"#e8eaf0",muted:"#4a5270",red:"#F44336",
@@ -311,33 +311,21 @@ export default function App(){
 
   const startRest=secs=>{setRestTimer(secs);setRestActive(true);};
 
-  // Partage avec vraie image de la carte
   const shareCard=async()=>{
     if(!cardRef.current||sharing)return;
     setSharing(true);
     try{
       const canvas=await html2canvas(cardRef.current,{
-        backgroundColor:"#050608",
-        scale:2,
-        useCORS:true,
-        logging:false,
+        backgroundColor:"#050608",scale:2,useCORS:true,logging:false,
       });
       canvas.toBlob(async(blob)=>{
         if(!blob){setSharing(false);return;}
         const file=new File([blob],"ma-carte-voltra.png",{type:"image/png"});
-        const shareText=`⚡ Ma carte VOLTRA — OVR ${ovr} ${getTier(ovr).name}\n\n💪 Sport: ${selSport?.name||"—"}\n\nGénère ta carte sur Voltra !\n${APP_URL}`;
+        const shareText=`⚡ Ma carte VOLTRA — OVR ${ovr} ${getTier(ovr).name}\n💪 Sport: ${selSport?.name||"—"}\n\nGénère ta carte !\n${APP_URL}`;
         if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-          await navigator.share({
-            title:"Ma carte VOLTRA",
-            text:shareText,
-            files:[file],
-          }).catch(()=>{});
+          await navigator.share({title:"Ma carte VOLTRA",text:shareText,files:[file]}).catch(()=>{});
         } else if(navigator.share){
-          await navigator.share({
-            title:"Ma carte VOLTRA",
-            text:shareText,
-            url:APP_URL,
-          }).catch(()=>{});
+          await navigator.share({title:"Ma carte VOLTRA",text:shareText,url:APP_URL}).catch(()=>{});
         } else {
           const link=document.createElement("a");
           link.href=URL.createObjectURL(blob);
@@ -346,9 +334,7 @@ export default function App(){
         }
         setSharing(false);
       },"image/png");
-    }catch(e){
-      setSharing(false);
-    }
+    }catch(e){setSharing(false);}
   };
 
   const GEN_MSGS=["Analyse du profil biomécanique…","Calcul des faiblesses prioritaires…","Création d'exercices sur-mesure…","Construction des blocs cardio…","Calibration des intensités…","Intégration de la périodisation…","Finalisation du programme…"];
@@ -366,17 +352,17 @@ export default function App(){
         body:JSON.stringify({
           model:"claude-sonnet-4-20250514",
           max_tokens:4000,
-          system:`Tu es un préparateur physique expert. Crée un programme musculation+cardio pour ${selSport.name}.
-CONTEXTE: ${selSport.contexte}
-PATTERNS: ${selSport.patterns.join(",")}
-CARDIO: ${selSport.cardio.volume}/100 — ${selSport.cardio.type}
-OVR: ${ovr}/99 FAIBLESSES: ${weak||"aucune"} POINTS FORTS: ${strong||"équilibré"}
-NIVEAU: ${athlete.niveau} JOURS: ${athlete.jours} SAISON: ${athlete.saison}
-BLESSURES: ${athlete.blessures||"aucune"} ÉQUIP: ${selSport.equipement.join(",")}
-RÈGLES: exercices spécifiques au ${selSport.name}, cible les faiblesses, cardio adapté.
+          system:`Préparateur physique expert. Programme musculation+cardio pour ${selSport.name}.
+Sport:${selSport.contexte.slice(0,100)}
+Patterns:${selSport.patterns.join(",")}
+Cardio:${selSport.cardio.volume}/100 ${selSport.cardio.type}
+OVR:${ovr} Faiblesses:${weak||"aucune"} Forts:${strong||"équilibré"}
+Niveau:${athlete.niveau} Jours:${athlete.jours} Saison:${athlete.saison}
+Blessures:${athlete.blessures||"aucune"} Equip:${selSport.equipement.join(",")}
+Règles: exercices spécifiques ${selSport.name}, cible faiblesses, cardio adapté volume ${selSport.cardio.volume}.
 JSON compact sans espaces ni backticks:
-{"programme_titre":"","programme_sous_titre":"","logique_programme":"","strategie_cardio":"","seances":[{"num":1,"titre":"","focus_sportif":"","focus_faiblesse":"","duree_min":60,"ratio":"","blocs":[{"bloc_nom":"","bloc_type":"MUSCU","bloc_desc":"","duree_min":10,"exercices":[{"nom":"","type_exercice":"MUSCU","geste_sportif":"","position_depart":"","execution":"","focus_technique":["","",""],"series_reps":"","recuperation":"","zone_fc":"","structure_cardio":"","intention":"","progression":""}]}]}],"conseils_specifiques":["",""],"conseils_cardio":["",""]}`,
-          messages:[{role:"user",content:`Programme ${athlete.jours} séances ${selSport.name} OVR${ovr}. Faiblesses:${weak||"équilibré"}. JSON uniquement.`}]
+{"programme_titre":"","programme_sous_titre":"","logique_programme":"","strategie_cardio":"","seances":[{"num":1,"titre":"","focus_sportif":"","focus_faiblesse":"","duree_min":60,"ratio":"70/30","blocs":[{"bloc_nom":"","bloc_type":"MUSCU","bloc_desc":"","duree_min":45,"exercices":[{"nom":"","type_exercice":"MUSCU","geste_sportif":"","position_depart":"","execution":"","focus_technique":["","",""],"series_reps":"4x8","recuperation":"90s","zone_fc":"","structure_cardio":"","intention":"","progression":""}]}]}],"conseils_specifiques":[""],"conseils_cardio":[""]}`,
+          messages:[{role:"user",content:`Génère ${athlete.jours} séances complètes pour ${selSport.name} OVR${ovr}. Faiblesses:${weak||"équilibré"}. Remplis TOUS les champs du JSON. Sois concis mais complet.`}]
         })
       });
       const data=await res.json();
