@@ -25,41 +25,38 @@ button{cursor:pointer}
 .fi {animation:fadeIn .4s ease both}
 `;
 
-const API_KEY = import.meta.env.VITE_API_KEY;
-
-
 const C = {
-  bg:"#050608", surf:"#0c0d12", surf2:"#121420", surf3:"#181b26",
-  border:"#1c2030", gold:"#C9A84C", goldLight:"#F0D080",
-  text:"#e8eaf0", muted:"#4a5270", red:"#F44336",
+  bg:"#050608",surf:"#0c0d12",surf2:"#121420",surf3:"#181b26",
+  border:"#1c2030",gold:"#C9A84C",goldLight:"#F0D080",
+  text:"#e8eaf0",muted:"#4a5270",red:"#F44336",
 };
 
-const clamp = (v,mn,mx) => Math.min(mx,Math.max(mn,v));
-const lerp  = (a,b,t)   => a+(b-a)*t;
+const clamp=(v,mn,mx)=>Math.min(mx,Math.max(mn,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
 
 function scoreFromTable(val,table){
   const sorted=[...table].sort((a,b)=>a[0]-b[0]);
-  if(val<=sorted[0][0]) return sorted[0][1];
-  if(val>=sorted[sorted.length-1][0]) return sorted[sorted.length-1][1];
+  if(val<=sorted[0][0])return sorted[0][1];
+  if(val>=sorted[sorted.length-1][0])return sorted[sorted.length-1][1];
   for(let i=0;i<sorted.length-1;i++){
-    const [v0,s0]=sorted[i],[v1,s1]=sorted[i+1];
-    if(val>=v0&&val<=v1) return Math.round(lerp(s0,s1,(val-v0)/(v1-v0)));
+    const[v0,s0]=sorted[i],[v1,s1]=sorted[i+1];
+    if(val>=v0&&val<=v1)return Math.round(lerp(s0,s1,(val-v0)/(v1-v0)));
   }
   return sorted[sorted.length-1][1];
 }
 
-const SCORE_TABLES = {
-  force:    [[0.4,35],[0.8,50],[1.0,60],[1.3,70],[1.6,78],[2.0,86],[2.5,93],[3.0,99]],
-  detente:  [[10,35],[20,48],[30,58],[40,68],[50,76],[60,84],[70,91],[80,99]],
-  sprint30: [[6.5,35],[6.0,48],[5.5,58],[5.0,68],[4.7,76],[4.4,84],[4.1,91],[3.8,99]],
-  sprint10: [[2.5,35],[2.2,48],[2.0,58],[1.85,68],[1.75,76],[1.65,84],[1.55,91],[1.45,99]],
+const SCORE_TABLES={
+  force:[[0.4,35],[0.8,50],[1.0,60],[1.3,70],[1.6,78],[2.0,86],[2.5,93],[3.0,99]],
+  detente:[[10,35],[20,48],[30,58],[40,68],[50,76],[60,84],[70,91],[80,99]],
+  sprint30:[[6.5,35],[6.0,48],[5.5,58],[5.0,68],[4.7,76],[4.4,84],[4.1,91],[3.8,99]],
+  sprint10:[[2.5,35],[2.2,48],[2.0,58],[1.85,68],[1.75,76],[1.65,84],[1.55,91],[1.45,99]],
   endurance:[[1200,35],[1600,48],[2000,58],[2400,68],[2800,76],[3000,84],[3200,91],[3600,99]],
-  gainage:  [[20,35],[45,48],[70,58],[100,68],[130,76],[165,84],[200,91],[240,99]],
+  gainage:[[20,35],[45,48],[70,58],[100,68],[130,76],[165,84],[200,91],[240,99]],
 };
 
 function calcScore(attr,val){
   const table=SCORE_TABLES[attr];
-  if(!table) return 50;
+  if(!table)return 50;
   if(attr==="sprint30"||attr==="sprint10"){
     const inv=table.map(([v,s])=>[-v,s]);
     return scoreFromTable(-val,inv);
@@ -73,45 +70,45 @@ function calcOVR(scores){
 }
 
 function getTier(score){
-  if(score>=90) return{label:"S",color:"#FFD700",bg:"#FFD70020",name:"ÉLITE"};
-  if(score>=80) return{label:"A",color:"#4CAF50",bg:"#4CAF5020",name:"EXCELLENT"};
-  if(score>=70) return{label:"B",color:"#2196F3",bg:"#2196F320",name:"BON NIVEAU"};
-  if(score>=60) return{label:"C",color:"#FF9800",bg:"#FF980020",name:"CORRECT"};
-  if(score>=50) return{label:"D",color:"#FF5722",bg:"#FF572220",name:"EN PROGRESSION"};
+  if(score>=90)return{label:"S",color:"#FFD700",bg:"#FFD70020",name:"ÉLITE"};
+  if(score>=80)return{label:"A",color:"#4CAF50",bg:"#4CAF5020",name:"EXCELLENT"};
+  if(score>=70)return{label:"B",color:"#2196F3",bg:"#2196F320",name:"BON NIVEAU"};
+  if(score>=60)return{label:"C",color:"#FF9800",bg:"#FF980020",name:"CORRECT"};
+  if(score>=50)return{label:"D",color:"#FF5722",bg:"#FF572220",name:"EN PROGRESSION"};
   return{label:"F",color:"#F44336",bg:"#F4433620",name:"DÉBUTANT"};
 }
 
 function getOVRColor(ovr){
-  if(ovr>=90) return "#FFD700";
-  if(ovr>=80) return "#69F0AE";
-  if(ovr>=70) return "#40C4FF";
-  if(ovr>=60) return "#FF9800";
-  return "#F44336";
+  if(ovr>=90)return"#FFD700";
+  if(ovr>=80)return"#69F0AE";
+  if(ovr>=70)return"#40C4FF";
+  if(ovr>=60)return"#FF9800";
+  return"#F44336";
 }
 
-const TESTS = [
-  {id:"force", label:"FORCE MAXIMALE", unit:"ratio moyen / poids corps", icon:"💪",
-   placeholder:"ex: 1.2",
+const TESTS=[
+  {id:"force",label:"FORCE MAXIMALE",unit:"ratio moyen / poids corps",icon:"💪",
+   placeholder:"calculé automatiquement",
    desc:"(Squat + Bench + Poids corps + Lest traction) — calculé automatiquement",
-   hint:"1.0 = débutant · 1.4 = bon · 1.8 = élite", min:0.3, max:3.5, step:0.05},
-  {id:"detente", label:"DÉTENTE VERTICALE", unit:"centimètres", icon:"🦘",
-   placeholder:"ex: 45", desc:"Hauteur de ton saut vertical pieds décollés du sol",
-   hint:"30 cm = moyen · 50 cm = bon · 70 cm = élite", min:5, max:100, step:1},
-  {id:"sprint30", label:"VITESSE 30 M", unit:"secondes", icon:"💨",
-   placeholder:"ex: 4.5", desc:"Temps sur 30 m départ arrêté",
-   hint:"5.0 s = moyen · 4.5 s = bon · 4.0 s = élite", min:3.5, max:8, step:0.1},
-  {id:"sprint10", label:"ACCÉLÉRATION 10 M", unit:"secondes", icon:"⚡",
-   placeholder:"ex: 1.7", desc:"Temps sur 10 m départ arrêté",
-   hint:"2.0 s = moyen · 1.8 s = bon · 1.5 s = élite", min:1.3, max:3, step:0.05},
-  {id:"endurance", label:"TEST DE COOPER", unit:"mètres en 12 minutes", icon:"🏃",
-   placeholder:"ex: 2400", desc:"Sur tapis : cours le plus loin possible en 12 minutes",
-   hint:"1600 m = débutant · 2400 m = bon · 3200 m = élite", min:800, max:4000, step:50},
-  {id:"gainage", label:"GAINAGE CORE", unit:"secondes (planche)", icon:"🧱",
-   placeholder:"ex: 120", desc:"Temps tenu en position de planche avant",
-   hint:"60 s = moyen · 120 s = bon · 200 s = élite", min:10, max:300, step:5},
+   hint:"1.0 = débutant · 1.4 = bon · 1.8 = élite",min:0.3,max:3.5,step:0.05},
+  {id:"detente",label:"DÉTENTE VERTICALE",unit:"centimètres",icon:"🦘",
+   placeholder:"ex: 45",desc:"Hauteur de ton saut vertical pieds décollés du sol",
+   hint:"30 cm = moyen · 50 cm = bon · 70 cm = élite",min:5,max:100,step:1},
+  {id:"sprint30",label:"VITESSE 30 M",unit:"secondes",icon:"💨",
+   placeholder:"ex: 4.5",desc:"Temps sur 30 m départ arrêté",
+   hint:"5.0 s = moyen · 4.5 s = bon · 4.0 s = élite",min:3.5,max:8,step:0.1},
+  {id:"sprint10",label:"ACCÉLÉRATION 10 M",unit:"secondes",icon:"⚡",
+   placeholder:"ex: 1.7",desc:"Temps sur 10 m départ arrêté",
+   hint:"2.0 s = moyen · 1.8 s = bon · 1.5 s = élite",min:1.3,max:3,step:0.05},
+  {id:"endurance",label:"TEST DE COOPER",unit:"mètres en 12 minutes",icon:"🏃",
+   placeholder:"ex: 2400",desc:"Sur tapis : cours le plus loin possible en 12 minutes",
+   hint:"1600 m = débutant · 2400 m = bon · 3200 m = élite",min:800,max:4000,step:50},
+  {id:"gainage",label:"GAINAGE CORE",unit:"secondes (planche)",icon:"🧱",
+   placeholder:"ex: 120",desc:"Temps tenu en position de planche avant",
+   hint:"60 s = moyen · 120 s = bon · 200 s = élite",min:10,max:300,step:5},
 ];
 
-const SPORTS = [
+const SPORTS=[
   {id:"football",name:"Football",icon:"⚽",color:"#4CAF50",
    weights:{force:0.8,detente:0.9,sprint30:1.2,sprint10:1.1,endurance:1.0,gainage:0.9},
    contexte:"Le footballeur effectue 150-200 sprints/match, des frappes rotatives, des dribbles explosifs et des duels physiques.",
@@ -132,7 +129,7 @@ const SPORTS = [
    equipement:["Barre olympique","Haltères","Kettlebell","Battle ropes","Sled","Médecine ball"]},
   {id:"sprint",name:"Sprint",icon:"💨",color:"#FFD600",
    weights:{force:1.1,detente:1.2,sprint30:1.5,sprint10:1.3,endurance:0.5,gainage:0.9},
-   contexte:"Le sprinter produit 5× le poids du corps à l'impulsion, fréquence de pas 4.5-5 Hz.",
+   contexte:"Le sprinter produit 5x le poids du corps à l'impulsion, fréquence de pas 4.5-5 Hz.",
    patterns:["triple_extension_maximale","mecanique_bras_sprint","frequence_pas","depart_blocs"],
    cardio:{volume:50,type:"Lactique pur 95-100% FCmax + repos long",methodes:["Séries 60-120m max","Hill sprints","Flying sprints"]},
    equipement:["Barre olympique","Sled/traineau","Élastiques","Box pliométrique","Haltères"]},
@@ -162,7 +159,7 @@ const SPORTS = [
    equipement:["Câble poulie","Haltères","Élastiques","TRX","Médecine ball"]},
 ];
 
-const ATHLETE_SVG = {
+const ATHLETE_SVG={
   football:<svg viewBox="0 0 200 260" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="gf" cx="50%" cy="70%" r="50%"><stop offset="0%" stopColor="#4CAF50" stopOpacity=".5"/><stop offset="100%" stopColor="#050608" stopOpacity="0"/></radialGradient></defs><ellipse cx="100" cy="220" rx="80" ry="50" fill="url(#gf)"/><ellipse cx="100" cy="255" rx="40" ry="7" fill="#000" opacity=".5"/><line x1="90" y1="180" x2="70" y2="230" stroke="#2E7D32" strokeWidth="18" strokeLinecap="round"/><line x1="70" y1="230" x2="55" y2="255" stroke="#2E7D32" strokeWidth="14" strokeLinecap="round"/><ellipse cx="52" cy="257" rx="14" ry="7" fill="#111" transform="rotate(-10 52 257)"/><line x1="110" y1="180" x2="150" y2="185" stroke="#2E7D32" strokeWidth="20" strokeLinecap="round"/><line x1="150" y1="185" x2="172" y2="170" stroke="#2E7D32" strokeWidth="16" strokeLinecap="round"/><ellipse cx="178" cy="167" rx="16" ry="9" fill="#111" transform="rotate(-20 178 167)"/><path d="M80 120 Q100 110 122 120 L128 180 Q100 190 75 180Z" fill="#4CAF50"/><text x="100" y="157" textAnchor="middle" fill="white" fontSize="18" fontFamily="'Bebas Neue',sans-serif">9</text><line x1="80" y1="134" x2="55" y2="158" stroke="#81C784" strokeWidth="13" strokeLinecap="round"/><line x1="122" y1="134" x2="148" y2="152" stroke="#81C784" strokeWidth="13" strokeLinecap="round"/><rect x="92" y="105" width="14" height="18" rx="5" fill="#FFCC80"/><ellipse cx="99" cy="95" rx="20" ry="23" fill="#FFCC80"/><ellipse cx="99" cy="78" rx="20" ry="10" fill="#1a1a1a"/><circle cx="91" cy="95" r="3" fill="#333"/><circle cx="107" cy="95" r="3" fill="#333"/><circle cx="175" cy="160" r="13" fill="white" opacity=".9"/></svg>,
   mma:<svg viewBox="0 0 200 260" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="gm" cx="50%" cy="65%" r="55%"><stop offset="0%" stopColor="#F44336" stopOpacity=".6"/><stop offset="100%" stopColor="#050608" stopOpacity="0"/></radialGradient></defs><ellipse cx="100" cy="215" rx="85" ry="55" fill="url(#gm)"/><ellipse cx="100" cy="255" rx="42" ry="7" fill="#000" opacity=".5"/><line x1="92" y1="182" x2="72" y2="238" stroke="#7B1FA2" strokeWidth="20" strokeLinecap="round"/><line x1="72" y1="238" x2="58" y2="256" stroke="#7B1FA2" strokeWidth="15" strokeLinecap="round"/><line x1="108" y1="182" x2="148" y2="145" stroke="#7B1FA2" strokeWidth="20" strokeLinecap="round"/><line x1="148" y1="145" x2="178" y2="112" stroke="#7B1FA2" strokeWidth="16" strokeLinecap="round"/><ellipse cx="185" cy="106" rx="17" ry="9" fill="#1a1a1a" transform="rotate(-40 185 106)"/><path d="M72 118 Q100 104 130 118 L136 182 Q100 194 68 182Z" fill="#EF9A9A"/><path d="M73 160 Q100 170 130 160 L132 182 Q100 190 72 182Z" fill="#B71C1C"/><line x1="72" y1="130" x2="44" y2="152" stroke="#EF9A9A" strokeWidth="15" strokeLinecap="round"/><rect x="18" y="163" width="24" height="18" rx="6" fill="#F44336"/><line x1="130" y1="130" x2="155" y2="145" stroke="#EF9A9A" strokeWidth="15" strokeLinecap="round"/><rect x="163" y="152" width="24" height="18" rx="6" fill="#F44336"/><rect x="90" y="103" width="18" height="18" rx="6" fill="#FFCC80"/><ellipse cx="99" cy="90" rx="24" ry="27" fill="#FFCC80"/><ellipse cx="99" cy="68" rx="24" ry="12" fill="#2e1a0f"/><circle cx="88" cy="90" r="4" fill="#1a1a1a"/><circle cx="110" cy="90" r="4" fill="#1a1a1a"/></svg>,
   sprint:<svg viewBox="0 0 200 260" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="gs" cx="50%" cy="60%" r="50%"><stop offset="0%" stopColor="#FFD600" stopOpacity=".4"/><stop offset="100%" stopColor="#050608" stopOpacity="0"/></radialGradient></defs><ellipse cx="100" cy="210" rx="80" ry="50" fill="url(#gs)"/><line x1="95" y1="180" x2="65" y2="225" stroke="#E65100" strokeWidth="20" strokeLinecap="round"/><line x1="65" y1="225" x2="45" y2="252" stroke="#E65100" strokeWidth="16" strokeLinecap="round"/><line x1="108" y1="180" x2="148" y2="190" stroke="#E65100" strokeWidth="22" strokeLinecap="round"/><line x1="148" y1="190" x2="172" y2="238" stroke="#E65100" strokeWidth="18" strokeLinecap="round"/><path d="M82 122 Q105 110 128 122 L134 180 Q105 192 78 180Z" fill="#FFF176"/><rect x="94" y="107" width="14" height="18" rx="5" fill="#FFCC80"/><ellipse cx="101" cy="96" rx="20" ry="23" fill="#FFCC80"/><ellipse cx="101" cy="79" rx="20" ry="10" fill="#1a1a1a"/><line x1="12" y1="130" x2="55" y2="130" stroke="#FFD600" strokeWidth="3" opacity=".7" strokeLinecap="round"/></svg>,
@@ -255,27 +252,27 @@ function PlayerCard({scores,ovr,playerName,sport,compact=false}){
 }
 
 export default function App(){
-  const [screen,setScreen]=useState("home");
-  const [testValues,setTestValues]=useState({});
-  const [forceInputs,setForceInputs]=useState({squat:"",bench:"",traction:"",poids:""});
-  const [scores,setScores]=useState({});
-  const [ovr,setOvr]=useState(0);
-  const [playerName,setPlayerName]=useState("");
-  const [selSport,setSelSport]=useState(null);
-  const [athlete,setAthlete]=useState({niveau:"Intermédiaire (1-3 ans)",objectif:"Performance sportive",jours:"3",saison:"Préparation générale",blessures:""});
-  const [programme,setProgramme]=useState(null);
-  const [genProgress,setGenProgress]=useState(0);
-  const [genMsg,setGenMsg]=useState("");
-  const [activeSeance,setActiveSeance]=useState(0);
-  const [expandedExo,setExpandedExo]=useState(null);
-  const [liveMode,setLiveMode]=useState(false);
-  const [liveBloc,setLiveBloc]=useState(0);
-  const [liveExo,setLiveExo]=useState(0);
-  const [liveSerie,setLiveSerie]=useState(1);
-  const [restTimer,setRestTimer]=useState(0);
-  const [restActive,setRestActive]=useState(false);
-  const [copied,setCopied]=useState(false);
-  const [error,setError]=useState("");
+  const[screen,setScreen]=useState("home");
+  const[testValues,setTestValues]=useState({});
+  const[forceInputs,setForceInputs]=useState({squat:"",bench:"",traction:"",poids:""});
+  const[scores,setScores]=useState({});
+  const[ovr,setOvr]=useState(0);
+  const[playerName,setPlayerName]=useState("");
+  const[selSport,setSelSport]=useState(null);
+  const[athlete,setAthlete]=useState({niveau:"Intermédiaire (1-3 ans)",objectif:"Performance sportive",jours:"3",saison:"Préparation générale",blessures:""});
+  const[programme,setProgramme]=useState(null);
+  const[genProgress,setGenProgress]=useState(0);
+  const[genMsg,setGenMsg]=useState("");
+  const[activeSeance,setActiveSeance]=useState(0);
+  const[expandedExo,setExpandedExo]=useState(null);
+  const[liveMode,setLiveMode]=useState(false);
+  const[liveBloc,setLiveBloc]=useState(0);
+  const[liveExo,setLiveExo]=useState(0);
+  const[liveSerie,setLiveSerie]=useState(1);
+  const[restTimer,setRestTimer]=useState(0);
+  const[restActive,setRestActive]=useState(false);
+  const[copied,setCopied]=useState(false);
+  const[error,setError]=useState("");
   const progRef=useRef(null);
   const timerRef=useRef(null);
 
@@ -284,14 +281,13 @@ export default function App(){
     return()=>document.head.removeChild(st);
   },[]);
 
-  // Calcul force : (squat + bench + poids+lest) / 3 / poids
   useEffect(()=>{
     const s=parseFloat(forceInputs.squat);
     const b=parseFloat(forceInputs.bench);
     const t=parseFloat(forceInputs.traction)||0;
     const p=parseFloat(forceInputs.poids);
     if(!isNaN(s)&&!isNaN(b)&&!isNaN(p)&&p>0){
-      const tractionTotal=p+t; // poids corps + lest
+      const tractionTotal=p+t;
       const ratio=((s+b+tractionTotal)/3)/p;
       setTestValues(prev=>({...prev,force:ratio.toFixed(2)}));
     }
@@ -311,7 +307,6 @@ export default function App(){
 
   const startRest=secs=>{setRestTimer(secs);setRestActive(true);};
 
-  // Partage natif iOS
   const shareCard=()=>{
     const lines=[`⚡ MA CARTE VOLTRA`,`⭐ OVR: ${ovr} — ${getTier(ovr).name}`];
     TESTS.forEach(t=>{if(scores[t.id])lines.push(`${t.icon} ${t.label}: ${scores[t.id]}`);});
@@ -319,7 +314,7 @@ export default function App(){
     const text=lines.join("\n");
     if(navigator.share){
       navigator.share({title:"Ma carte VOLTRA",text}).catch(()=>{});
-    } else {
+    }else{
       navigator.clipboard.writeText(text).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2500);});
     }
   };
@@ -333,12 +328,9 @@ export default function App(){
     const weak=TESTS.filter(t=>scores[t.id]&&scores[t.id]<70).map(t=>`${t.label}: ${scores[t.id]}/99`).join(", ");
     const strong=TESTS.filter(t=>scores[t.id]&&scores[t.id]>=80).map(t=>`${t.label}: ${scores[t.id]}/99`).join(", ");
     try{
-    const res = await fetch("/api/generate", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-
+      const res=await fetch("/api/generate",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
           model:"claude-sonnet-4-20250514",max_tokens:8000,
           system:`Tu es un préparateur physique expert de niveau international.
@@ -352,52 +344,30 @@ POINTS FORTS: ${strong||"Profil en développement"}
 NIVEAU: ${athlete.niveau} | OBJECTIF: ${athlete.objectif} | JOURS: ${athlete.jours}j/sem | SAISON: ${athlete.saison}
 BLESSURES: ${athlete.blessures||"Aucune"}
 ÉQUIPEMENT: ${selSport.equipement.join(", ")}
-
 RÈGLES:
 1. Exercices SPÉCIFIQUES au ${selSport.name} — jamais génériques
 2. Cible EN PRIORITÉ les faiblesses identifiées
-3. Cardio adapté au volume ${selSport.cardio.volume}/100 : >80→2 blocs/séance | 50-80→1 bloc | <50→cardio léger
-4. Pour chaque exercice: nom créatif, geste sportif répliqué, position départ, exécution, 3 focus, séries×reps×tempo, récup, intention, progression
+3. Cardio adapté au volume ${selSport.cardio.volume}/100 : >80 2 blocs/séance | 50-80 1 bloc | <50 cardio léger
+4. Pour chaque exercice: nom créatif, geste sportif répliqué, position départ, exécution, 3 focus, séries x reps x tempo, récup, intention, progression
 5. Nomme une focus_faiblesse par séance
-
 Réponds UNIQUEMENT en JSON valide sans backticks.
-{
-  "programme_titre":"string","programme_sous_titre":"string",
-  "logique_programme":"string","strategie_cardio":"string",
-  "seances":[{
-    "num":number,"titre":"string","focus_sportif":"string","focus_faiblesse":"string",
-    "duree_min":number,"ratio":"string",
-    "blocs":[{
-      "bloc_nom":"string",
-      "bloc_type":"MUSCU|CARDIO_ACTIVATION|CARDIO_SPECIFIQUE|CARDIO_FINISHER|CARDIO_RECUPERATION",
-      "bloc_desc":"string","duree_min":number,
-      "exercices":[{
-        "nom":"string","type_exercice":"MUSCU|CARDIO","geste_sportif":"string",
-        "position_depart":"string","execution":"string",
-        "focus_technique":["string","string","string"],
-        "series_reps":"string","recuperation":"string","zone_fc":"string",
-        "structure_cardio":"string","intention":"string","progression":"string"
-      }]
-    }]
-  }],
-  "conseils_specifiques":["string","string","string"],
-  "conseils_cardio":["string","string","string"]
-}`,
+{"programme_titre":"string","programme_sous_titre":"string","logique_programme":"string","strategie_cardio":"string","seances":[{"num":0,"titre":"string","focus_sportif":"string","focus_faiblesse":"string","duree_min":0,"ratio":"string","blocs":[{"bloc_nom":"string","bloc_type":"MUSCU","bloc_desc":"string","duree_min":0,"exercices":[{"nom":"string","type_exercice":"MUSCU","geste_sportif":"string","position_depart":"string","execution":"string","focus_technique":["string"],"series_reps":"string","recuperation":"string","zone_fc":"string","structure_cardio":"string","intention":"string","progression":"string"}]}]}],"conseils_specifiques":["string"],"conseils_cardio":["string"]}`,
           messages:[{role:"user",content:`Génère le programme ${athlete.jours} séances pour cet athlète de ${selSport.name} OVR ${ovr}. Faiblesses: ${weak||"équilibré"}. JSON uniquement.`}]
         })
       });
       const data=await res.json();
       clearInterval(progRef.current);setGenProgress(100);
-      const parsed=JSON.parse((data.content?.[0]?.text||"").replace(/```json|```/g,"").trim());
+      const raw=data.content?.[0]?.text||"";
+      const parsed=JSON.parse(raw.replace(/```json|```/g,"").trim());
       setTimeout(()=>{setProgramme(parsed);setScreen("program");setActiveSeance(0);},600);
- }catch(e){
-  clearInterval(progRef.current);
-  setError("Erreur: " + e.message);
-  setScreen("profile");
-}
+    }catch(e){
+      clearInterval(progRef.current);
+      setError("Erreur: "+e.message);
+      setScreen("profile");
+    }
+  };
 
-  /* ══ HOME ══ */
-  if(screen==="home") return(
+  if(screen==="home")return(
     <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:24,textAlign:"center",position:"relative",overflow:"hidden"}}>
       <div style={{position:"absolute",top:"20%",left:"50%",transform:"translateX(-50%)",width:600,height:600,background:`radial-gradient(circle,${C.gold}08 0%,transparent 70%)`,pointerEvents:"none"}}/>
       <div className="fu" style={{marginBottom:36}}>
@@ -429,7 +399,6 @@ Réponds UNIQUEMENT en JSON valide sans backticks.
     </div>
   );
 
-  /* ══ TESTS ══ */
   if(screen==="tests"){
     const filled=Object.keys(scores).length;
     return(
@@ -445,15 +414,11 @@ Réponds UNIQUEMENT en JSON valide sans backticks.
               <div style={{fontFamily:"'Bebas Neue'",fontSize:40,letterSpacing:2,lineHeight:1}}>TESTS<span style={{color:C.gold}}> PHYSIQUES</span></div>
               <div style={{color:C.muted,marginTop:6,fontSize:15}}>Entre tes résultats — laisse vide si tu ne sais pas</div>
             </div>
-
-            {/* Prénom */}
             <div className="fu1" style={{marginBottom:16}}>
               <label style={{display:"block",fontFamily:"'Bebas Neue'",fontSize:12,letterSpacing:2,color:C.muted,marginBottom:5}}>TON PRÉNOM</label>
               <input value={playerName} onChange={e=>setPlayerName(e.target.value.toUpperCase())} placeholder="ex: LUCAS"
                 style={{background:C.surf2,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:15,width:"100%",fontFamily:"'Bebas Neue'",letterSpacing:2}}/>
             </div>
-
-            {/* FORCE BLOC SPÉCIAL */}
             <div className="fu1" style={{background:C.surf,border:`1px solid ${scores.force?getTier(scores.force).color+"40":C.border}`,borderRadius:12,padding:16,marginBottom:12}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
                 <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -472,16 +437,15 @@ Réponds UNIQUEMENT en JSON valide sans backticks.
               </div>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
                 {[
-                  {key:"squat",   label:"🦵 SQUAT 1RM (kg)",            ph:"ex: 100"},
-                  {key:"bench",   label:"🏋️ BENCH PRESS 1RM (kg)",      ph:"ex: 80"},
-                  {key:"traction",label:"⬆️ LEST TRACTION (kg)",         ph:"0 si poids corps seul"},
-                  {key:"poids",   label:"⚖️ TON POIDS DE CORPS (kg)",   ph:"ex: 80"},
+                  {key:"squat",label:"🦵 SQUAT 1RM (kg)",ph:"ex: 100"},
+                  {key:"bench",label:"🏋️ BENCH PRESS 1RM (kg)",ph:"ex: 80"},
+                  {key:"traction",label:"⬆️ LEST TRACTION (kg)",ph:"0 si poids corps seul"},
+                  {key:"poids",label:"⚖️ TON POIDS (kg)",ph:"ex: 80"},
                 ].map(f=>(
                   <div key={f.key}>
                     <div style={{fontFamily:"'Bebas Neue'",fontSize:10,letterSpacing:1.5,color:C.muted,marginBottom:3}}>{f.label}</div>
                     <input type="number" value={forceInputs[f.key]} onChange={e=>setForceInputs(p=>({...p,[f.key]:e.target.value}))}
-                      placeholder={f.ph}
-                      style={{width:"100%",background:C.surf2,border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 10px",color:C.text,fontSize:14}}/>
+                      placeholder={f.ph} style={{width:"100%",background:C.surf2,border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 10px",color:C.text,fontSize:14}}/>
                   </div>
                 ))}
               </div>
@@ -493,8 +457,6 @@ Réponds UNIQUEMENT en JSON valide sans backticks.
               {scores.force&&<div style={{height:5,background:C.surf3,borderRadius:3,overflow:"hidden",marginTop:8}}><div style={{height:"100%",width:`${scores.force}%`,background:getTier(scores.force).color,borderRadius:3,transition:"width 1s ease"}}/></div>}
               <div style={{fontSize:10,color:C.muted,marginTop:4}}>Traction = poids corps + lest · 1.0 = débutant · 1.4 = bon · 1.8 = élite</div>
             </div>
-
-            {/* AUTRES TESTS */}
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
               {TESTS.slice(1).map((t,i)=>{
                 const v=parseFloat(testValues[t.id]);
@@ -525,15 +487,12 @@ Réponds UNIQUEMENT en JSON valide sans backticks.
                 );
               })}
             </div>
-
             <div style={{marginTop:20}}>
               <Btn onClick={()=>setScreen("card")} full disabled={filled<3} style={{fontSize:17,padding:"14px"}}>
                 {filled<3?`Remplis encore ${3-filled} test(s) minimum`:"VOIR MA CARTE VOLTRA →"}
               </Btn>
             </div>
           </div>
-
-          {/* Preview */}
           <div style={{position:"sticky",top:76,height:"fit-content"}}>
             <div style={{fontFamily:"'Bebas Neue'",fontSize:11,letterSpacing:3,color:C.muted,marginBottom:8}}>PREVIEW</div>
             <PlayerCard scores={scores} ovr={ovr} playerName={playerName||"TOI"} sport={selSport?.id||"football"} compact/>
@@ -557,8 +516,7 @@ Réponds UNIQUEMENT en JSON valide sans backticks.
     );
   }
 
-  /* ══ CARD ══ */
-  if(screen==="card") return(
+  if(screen==="card")return(
     <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",padding:24}}>
       <header style={{position:"fixed",top:0,left:0,right:0,background:`${C.bg}e0`,borderBottom:`1px solid ${C.border}`,padding:"0 24px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between",zIndex:100,backdropFilter:"blur(8px)"}}>
         <button onClick={()=>setScreen("tests")} style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:6,padding:"5px 12px",color:C.muted,fontSize:13}}>← Modifier</button>
@@ -607,7 +565,6 @@ Réponds UNIQUEMENT en JSON valide sans backticks.
     </div>
   );
 
-  /* ══ SPORT ══ */
   if(screen==="sport"){
     const recommended=SPORTS.map(sp=>{
       const w=Object.entries(sp.weights).reduce((sum,[k,v])=>sum+(scores[k]||60)*v,0)/Object.values(sp.weights).reduce((a,b)=>a+b,0);
@@ -650,7 +607,6 @@ Réponds UNIQUEMENT en JSON valide sans backticks.
     );
   }
 
-  /* ══ PROFILE ══ */
   if(screen==="profile"){
     const inp={width:"100%",background:C.surf2,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:15,appearance:"none"};
     return(
@@ -711,8 +667,7 @@ Réponds UNIQUEMENT en JSON valide sans backticks.
     );
   }
 
-  /* ══ GENERATING ══ */
-  if(screen==="generating") return(
+  if(screen==="generating")return(
     <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center"}}>
       <div style={{textAlign:"center",maxWidth:460,padding:32}}>
         <div style={{width:80,height:80,border:`3px solid ${C.border}`,borderTop:`3px solid ${C.gold}`,borderRadius:"50%",margin:"0 auto 28px",animation:"spin 1s linear infinite"}}/>
@@ -727,7 +682,6 @@ Réponds UNIQUEMENT en JSON valide sans backticks.
     </div>
   );
 
-  /* ══ PROGRAM ══ */
   if(screen==="program"&&programme){
     const seance=programme.seances?.[activeSeance];
     const CARDIO_COLORS={CARDIO_ACTIVATION:"#FFC107",CARDIO_SPECIFIQUE:"#FF6D00",CARDIO_FINISHER:"#F44336",CARDIO_RECUPERATION:"#4CAF50"};
