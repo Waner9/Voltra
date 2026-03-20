@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
 
   try {
-    const { sport, ovr, weak, jours, niveau, saison, blessures, equipement, contexte, cardioVolume, cardioType, patterns } = req.body;
+    const { sport, ovr, weak, jours, niveau, saison, blessures, contexte, cardioVolume, cardioType } = req.body;
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -19,15 +19,10 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
         max_tokens: 4000,
-        system: `Expert préparateur physique. Génère un programme JSON pour ${sport}.
-Contexte: ${contexte}
-OVR:${ovr} Faiblesses:${weak||"aucune"} Niveau:${niveau} Jours:${jours} Saison:${saison}
-Blessures:${blessures||"aucune"} Cardio:${cardioVolume}/100 ${cardioType}
-IMPORTANT: Réponds UNIQUEMENT avec du JSON valide, rien d'autre.`,
+        system: `Expert préparateur physique. Programme pour ${sport}. Contexte:${contexte} OVR:${ovr} Faiblesses:${weak} Niveau:${niveau} Jours:${jours} Saison:${saison} Blessures:${blessures} Cardio:${cardioVolume}/100 ${cardioType}. Réponds UNIQUEMENT en JSON valide.`,
         messages: [{
           role: "user",
-          content: `Programme ${jours} séances ${sport} OVR${ovr}. JSON strict:
-{"programme_titre":"string","programme_sous_titre":"string","logique_programme":"string","strategie_cardio":"string","seances":[{"num":1,"titre":"string","focus_sportif":"string","focus_faiblesse":"string","duree_min":60,"ratio":"70/30","blocs":[{"bloc_nom":"string","bloc_type":"MUSCU","bloc_desc":"string","duree_min":45,"exercices":[{"nom":"string","type_exercice":"MUSCU","geste_sportif":"string","position_depart":"string","execution":"string","focus_technique":["string","string","string"],"series_reps":"4x8","recuperation":"90s","zone_fc":"","structure_cardio":"","intention":"string","progression":"string"}]}]}],"conseils_specifiques":["string"],"conseils_cardio":["string"]}`
+          content: `Programme ${jours} séances ${sport} OVR${ovr}. JSON:{"programme_titre":"","programme_sous_titre":"","logique_programme":"","strategie_cardio":"","seances":[{"num":1,"titre":"","focus_sportif":"","focus_faiblesse":"","duree_min":60,"ratio":"70/30","blocs":[{"bloc_nom":"","bloc_type":"MUSCU","bloc_desc":"","duree_min":45,"exercices":[{"nom":"","type_exercice":"MUSCU","geste_sportif":"","position_depart":"","execution":"","focus_technique":["","",""],"series_reps":"4x8","recuperation":"90s","zone_fc":"","structure_cardio":"","intention":"","progression":""}]}]}],"conseils_specifiques":[""],"conseils_cardio":[""]}`
         }]
       }),
     });
