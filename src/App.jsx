@@ -325,11 +325,14 @@ export default function App(){
   const GEN_MSGS=["Analyse du profil biomécanique…","Calcul des faiblesses prioritaires…","Création d'exercices sur-mesure…","Construction des blocs cardio…","Calibration des intensités…","Intégration de la périodisation…","Finalisation du programme…"];
 
   const generateProgram=async()=>{
-    setScreen("generating");setGenProgress(0);setError("");
-    let idx=0;setGenMsg(GEN_MSGS[0]);
-    progRef.current=setInterval(()=>{idx++;if(idx<GEN_MSGS.length){setGenMsg(GEN_MSGS[idx]);setGenProgress(Math.round(idx/GEN_MSGS.length*85));}},1600);
-    const weak=TESTS.filter(t=>scores[t.id]&&scores[t.id]<70).map(t=>`${t.label}:${scores[t.id]}`).join(",");
-    try{
+  setScreen("generating");setGenProgress(0);setError("");
+  let idx=0;setGenMsg(GEN_MSGS[0]);
+  progRef.current=setInterval(()=>{idx++;if(idx<GEN_MSGS.length){setGenMsg(GEN_MSGS[idx]);setGenProgress(Math.round(idx/GEN_MSGS.length*85));}},1800);
+  const weak=TESTS.filter(t=>scores[t.id]&&scores[t.id]<70).map(t=>`${t.label}:${scores[t.id]}`).join(",");
+  try{
+    const nbJours=parseInt(athlete.jours)||3;
+    const seances=[];
+    for(let i=1;i<=nbJours;i++){
       const res=await fetch("/api/generate",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
@@ -341,21 +344,35 @@ export default function App(){
           niveau:athlete.niveau,
           saison:athlete.saison,
           blessures:athlete.blessures||"aucune",
-          contexte:selSport.contexte.slice(0,150),
+          contexte:selSport.contexte.slice(0,100),
           cardioVolume:selSport.cardio.volume,
           cardioType:selSport.cardio.type,
+          numSeance:i,
         })
       });
-      const parsed=await res.json();
-      if(parsed.error)throw new Error(parsed.error);
-      clearInterval(progRef.current);setGenProgress(100);
-      setTimeout(()=>{setProgramme(parsed);setScreen("program");setActiveSeance(0);},600);
-    }catch(e){
-      clearInterval(progRef.current);
-      setError("Erreur: "+e.message);
-      setScreen("profile");
+      const data=await res.json();
+      if(data.error)throw new Error(data.error);
+      seances.push(data.seance);
+      setGenProgress(Math.round((i/nbJours)*85));
     }
-  };
+    clearInterval(progRef.current);setGenProgress(100);
+    const prog={
+      programme_titre:`PROGRAMME VOLTRA — ${selSport.name.toUpperCase()}`,
+      programme_sous_titre:`OVR ${ovr} · ${athlete.jours} séances · ${athlete.niveau}`,
+      logique_programme:`Programme calibré sur tes faiblesses : ${weak||"profil équilibré"}`,
+      strategie_cardio:`Cardio ${selSport.cardio.volume}/100 — ${selSport.cardio.type}`,
+      seances,
+      conseils_specifiques:[`Reste hydraté tout au long de la séance`,`Respecte les temps de récupération`],
+      conseils_cardio:[`Adapte l'intensité à ta forme du jour`,`Surveille ta fréquence cardiaque`],
+    };
+    setTimeout(()=>{setProgramme(prog);setScreen("program");setActiveSeance(0);},600);
+  }catch(e){
+    clearInterval(progRef.current);
+    setError("Erreur: "+e.message);
+    setScreen("profile");
+  }
+};
+
 
   if(screen==="home")return(
     <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:24,textAlign:"center",position:"relative",overflow:"hidden"}}>
