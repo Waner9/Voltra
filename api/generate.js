@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
 
   try {
-    const { sport, ovr, weak, jours, niveau, saison, blessures, contexte, cardioVolume, cardioType } = req.body;
+    const { sport, ovr, weak, jours, niveau, saison, blessures, contexte, cardioVolume, cardioType, numSeance } = req.body;
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -18,11 +18,16 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 4000,
-        system: `Expert préparateur physique. Programme pour ${sport}. Contexte:${contexte} OVR:${ovr} Faiblesses:${weak} Niveau:${niveau} Jours:${jours} Saison:${saison} Blessures:${blessures} Cardio:${cardioVolume}/100 ${cardioType}. Réponds UNIQUEMENT en JSON valide.`,
+        max_tokens: 2000,
         messages: [{
           role: "user",
-          content: `Programme ${jours} séances ${sport} OVR${ovr}. JSON:{"programme_titre":"","programme_sous_titre":"","logique_programme":"","strategie_cardio":"","seances":[{"num":1,"titre":"","focus_sportif":"","focus_faiblesse":"","duree_min":60,"ratio":"70/30","blocs":[{"bloc_nom":"","bloc_type":"MUSCU","bloc_desc":"","duree_min":45,"exercices":[{"nom":"","type_exercice":"MUSCU","geste_sportif":"","position_depart":"","execution":"","focus_technique":["","",""],"series_reps":"4x8","recuperation":"90s","zone_fc":"","structure_cardio":"","intention":"","progression":""}]}]}],"conseils_specifiques":[""],"conseils_cardio":[""]}`
+          content: `Tu es préparateur physique. Génère UNE séance de musculation+cardio pour ${sport} (séance ${numSeance}/${jours}).
+OVR:${ovr} Faiblesses:${weak||"aucune"} Niveau:${niveau} Saison:${saison} Blessures:${blessures||"aucune"}
+Cardio:${cardioVolume}/100 ${cardioType}
+Contexte sport:${contexte}
+
+Réponds UNIQUEMENT en JSON valide compact:
+{"num":${numSeance},"titre":"string","focus_sportif":"string","focus_faiblesse":"string","duree_min":60,"ratio":"70/30","blocs":[{"bloc_nom":"string","bloc_type":"MUSCU","bloc_desc":"string","duree_min":40,"exercices":[{"nom":"string","type_exercice":"MUSCU","geste_sportif":"string","position_depart":"string","execution":"string","focus_technique":["string","string","string"],"series_reps":"4x8","recuperation":"90s","zone_fc":"","structure_cardio":"","intention":"string","progression":"string"},{"nom":"string","type_exercice":"MUSCU","geste_sportif":"string","position_depart":"string","execution":"string","focus_technique":["string","string","string"],"series_reps":"4x8","recuperation":"90s","zone_fc":"","structure_cardio":"","intention":"string","progression":"string"},{"nom":"string","type_exercice":"MUSCU","geste_sportif":"string","position_depart":"string","execution":"string","focus_technique":["string","string","string"],"series_reps":"4x8","recuperation":"90s","zone_fc":"","structure_cardio":"","intention":"string","progression":"string"}]},{"bloc_nom":"string","bloc_type":"CARDIO_SPECIFIQUE","bloc_desc":"string","duree_min":20,"exercices":[{"nom":"string","type_exercice":"CARDIO","geste_sportif":"string","position_depart":"string","execution":"string","focus_technique":["string","string","string"],"series_reps":"string","recuperation":"string","zone_fc":"string","structure_cardio":"string","intention":"string","progression":"string"}]}]}`
         }]
       }),
     });
@@ -30,8 +35,8 @@ export default async function handler(req, res) {
     const data = await response.json();
     const text = data.content?.[0]?.text || "";
     const clean = text.replace(/```json|```/g, "").trim();
-    const parsed = JSON.parse(clean);
-    return res.status(200).json(parsed);
+    const seance = JSON.parse(clean);
+    return res.status(200).json({ seance });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
