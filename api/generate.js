@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
 
   try {
-    const { sport, ovr, weak, jours, niveau, saison, blessures, contexte, cardioVolume, cardioType, numSeance } = req.body;
+    const { sport, ovr, weak, jours, niveau, saison, blessures, contexte, cardioVolume, numSeance } = req.body;
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -18,16 +18,12 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 2000,
+        max_tokens: 1500,
         messages: [{
           role: "user",
-          content: `Tu es préparateur physique. Génère UNE séance de musculation+cardio pour ${sport} (séance ${numSeance}/${jours}).
-OVR:${ovr} Faiblesses:${weak||"aucune"} Niveau:${niveau} Saison:${saison} Blessures:${blessures||"aucune"}
-Cardio:${cardioVolume}/100 ${cardioType}
-Contexte sport:${contexte}
-
-Réponds UNIQUEMENT en JSON valide compact:
-{"num":${numSeance},"titre":"string","focus_sportif":"string","focus_faiblesse":"string","duree_min":60,"ratio":"70/30","blocs":[{"bloc_nom":"string","bloc_type":"MUSCU","bloc_desc":"string","duree_min":40,"exercices":[{"nom":"string","type_exercice":"MUSCU","geste_sportif":"string","position_depart":"string","execution":"string","focus_technique":["string","string","string"],"series_reps":"4x8","recuperation":"90s","zone_fc":"","structure_cardio":"","intention":"string","progression":"string"},{"nom":"string","type_exercice":"MUSCU","geste_sportif":"string","position_depart":"string","execution":"string","focus_technique":["string","string","string"],"series_reps":"4x8","recuperation":"90s","zone_fc":"","structure_cardio":"","intention":"string","progression":"string"},{"nom":"string","type_exercice":"MUSCU","geste_sportif":"string","position_depart":"string","execution":"string","focus_technique":["string","string","string"],"series_reps":"4x8","recuperation":"90s","zone_fc":"","structure_cardio":"","intention":"string","progression":"string"}]},{"bloc_nom":"string","bloc_type":"CARDIO_SPECIFIQUE","bloc_desc":"string","duree_min":20,"exercices":[{"nom":"string","type_exercice":"CARDIO","geste_sportif":"string","position_depart":"string","execution":"string","focus_technique":["string","string","string"],"series_reps":"string","recuperation":"string","zone_fc":"string","structure_cardio":"string","intention":"string","progression":"string"}]}]}`
+          content: `Préparateur physique expert. Séance ${numSeance} pour ${sport}. OVR:${ovr} Faiblesses:${weak||"aucune"} Niveau:${niveau}.
+JSON compact COURT sans espaces:
+{"num":${numSeance},"titre":"string","focus_sportif":"string","focus_faiblesse":"string","duree_min":60,"ratio":"70/30","blocs":[{"bloc_nom":"string","bloc_type":"MUSCU","bloc_desc":"string","duree_min":40,"exercices":[{"nom":"string","execution":"string","series_reps":"4x8","recuperation":"90s","intention":"string"},{"nom":"string","execution":"string","series_reps":"4x8","recuperation":"90s","intention":"string"},{"nom":"string","execution":"string","series_reps":"4x8","recuperation":"90s","intention":"string"}]},{"bloc_nom":"string","bloc_type":"CARDIO_SPECIFIQUE","bloc_desc":"string","duree_min":20,"exercices":[{"nom":"string","execution":"string","series_reps":"string","recuperation":"string","intention":"string"}]}]}`
         }]
       }),
     });
