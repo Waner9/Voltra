@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import html2canvas from "html2canvas";
+import { supabase } from "./supabase";
+import Auth from "./Auth";
 
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;900&family=DM+Mono:wght@400;500&display=swap');
