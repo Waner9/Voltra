@@ -293,36 +293,31 @@ export default function App(){
   const w=useWindowWidth();
   const isMob=w<640;
 
+  const[user,setUser]=useState(null);
+  const[authLoading,setAuthLoading]=useState(true);
   const[screen,setScreen]=useState("home");
-  const[testValues,setTestValues]=useState({});
-  const[forceInputs,setForceInputs]=useState({squat:"",bench:"",traction:"",poids:""});
-  const[scores,setScores]=useState({});
-  const[ovr,setOvr]=useState(0);
-  const[playerName,setPlayerName]=useState("");
-  const[selSport,setSelSport]=useState(null);
-  const[athlete,setAthlete]=useState({niveau:"Intermédiaire (1-3 ans)",objectif:"Performance sportive",jours:"3",saison:"Préparation générale",blessures:""});
-  const[programme,setProgramme]=useState(null);
-  const[genProgress,setGenProgress]=useState(0);
-  const[genMsg,setGenMsg]=useState("");
-  const[activeSeance,setActiveSeance]=useState(0);
-  const[expandedExo,setExpandedExo]=useState(null);
-  const[liveMode,setLiveMode]=useState(false);
-  const[liveBloc,setLiveBloc]=useState(0);
-  const[liveExo,setLiveExo]=useState(0);
-  const[liveSerie,setLiveSerie]=useState(1);
-  const[restTimer,setRestTimer]=useState(0);
-  const[restActive,setRestActive]=useState(false);
-  const[sharing,setSharing]=useState(false);
-  const[error,setError]=useState("");
-  const progRef=useRef(null);
-  const timerRef=useRef(null);
-  const cardRef=useRef(null);
+  // ... tous les autres useState existants ...
 
-  // ══ CSS inject ══
+  // Vérification session Supabase
   useEffect(()=>{
-    const st=document.createElement("style");st.textContent=CSS;document.head.appendChild(st);
-    return()=>document.head.removeChild(st);
+    supabase.auth.getSession().then(({data:{session}})=>{
+      setUser(session?.user||null);
+      setAuthLoading(false);
+    });
+    const{data:{subscription}}=supabase.auth.onAuthStateChange((_,session)=>{
+      setUser(session?.user||null);
+    });
+    return()=>subscription.unsubscribe();
   },[]);
+
+  if(authLoading)return(
+    <div style={{minHeight:"100vh",background:"#050608",display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <div style={{width:50,height:50,border:"3px solid #1c2030",borderTop:"3px solid #C9A84C",borderRadius:"50%",animation:"spin 1s linear infinite"}}/>
+    </div>
+  );
+
+  if(!user)return <Auth onAuth={setUser}/>;
+  // ... reste du composant App inchangé
 
   // ══ LOCALSTORAGE LOAD ══
   useEffect(()=>{
