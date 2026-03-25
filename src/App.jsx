@@ -480,7 +480,6 @@ const cardRef=useRef(null);
 
   if(screen==="home")return(
     <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:isMob?"20px 16px":"24px",textAlign:"center",position:"relative",overflow:"hidden"}}>
-      // Dans le screen home, remplace le header par :
 <div style={{position:"absolute",top:16,right:16,zIndex:10}}>
   <button onClick={async()=>{
     await supabase.auth.signOut();
