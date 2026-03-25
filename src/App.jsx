@@ -458,6 +458,15 @@ export default function App(){
 
   if(screen==="home")return(
     <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:isMob?"20px 16px":"24px",textAlign:"center",position:"relative",overflow:"hidden"}}>
+      // Dans le screen home, remplace le header par :
+<div style={{position:"absolute",top:16,right:16,zIndex:10}}>
+  <button onClick={async()=>{
+    await supabase.auth.signOut();
+    setUser(null);
+  }} style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:6,padding:"5px 12px",color:C.muted,fontSize:12,cursor:"pointer",fontFamily:"'Bebas Neue',sans-serif",letterSpacing:1}}>
+    DÉCONNEXION
+  </button>
+</div>
       <div style={{position:"absolute",top:"20%",left:"50%",transform:"translateX(-50%)",width:500,height:500,background:`radial-gradient(circle,${C.gold}08 0%,transparent 70%)`,pointerEvents:"none"}}/>
       <div className="fu" style={{marginBottom:isMob?20:36}}>
         <div style={{fontFamily:"'Bebas Neue'",fontSize:isMob?64:80,letterSpacing:8,lineHeight:.9,marginBottom:10}}>
