@@ -296,7 +296,29 @@ export default function App(){
   const[user,setUser]=useState(null);
   const[authLoading,setAuthLoading]=useState(true);
   const[screen,setScreen]=useState("home");
-  // ... tous les autres useState existants ...
+  const[testValues,setTestValues]=useState({});
+const[forceInputs,setForceInputs]=useState({squat:"",bench:"",traction:"",poids:""});
+const[scores,setScores]=useState({});
+const[ovr,setOvr]=useState(0);
+const[playerName,setPlayerName]=useState("");
+const[selSport,setSelSport]=useState(null);
+const[athlete,setAthlete]=useState({niveau:"Intermédiaire (1-3 ans)",objectif:"Performance sportive",jours:"3",saison:"Préparation générale",blessures:""});
+const[programme,setProgramme]=useState(null);
+const[genProgress,setGenProgress]=useState(0);
+const[genMsg,setGenMsg]=useState("");
+const[activeSeance,setActiveSeance]=useState(0);
+const[expandedExo,setExpandedExo]=useState(null);
+const[liveMode,setLiveMode]=useState(false);
+const[liveBloc,setLiveBloc]=useState(0);
+const[liveExo,setLiveExo]=useState(0);
+const[liveSerie,setLiveSerie]=useState(1);
+const[restTimer,setRestTimer]=useState(0);
+const[restActive,setRestActive]=useState(false);
+const[sharing,setSharing]=useState(false);
+const[error,setError]=useState("");
+const progRef=useRef(null);
+const timerRef=useRef(null);
+const cardRef=useRef(null);
 
   // Vérification session Supabase
   useEffect(()=>{
